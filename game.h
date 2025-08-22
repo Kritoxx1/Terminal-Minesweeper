@@ -31,6 +31,9 @@ typedef struct startMenu{
 #define HARD_HEIGHT 16
 #define HARD_MINES_AMOUNT 99
 
+// KEYS
+#define KEY_SPACE ' '
+
 typedef struct Cell {
   bool isRevealed; // If the cell revealed or not
   bool isBomb; // If the cell is a bomb
@@ -40,12 +43,7 @@ typedef struct Cell {
 /**
  *
  */
-void drawGrid();
-
-/**
- *
- */
-void gameLoop();
+void drawGrid(int width, int height, int cursorX, int cursorY);
 
 /**
  *
@@ -60,7 +58,14 @@ Cell* allocGameGrid(GameDiff diff, int* width, int* height);
  *
  * @param grid
  */
-void initGameGrid(Cell* grid);
+void initGameGrid(Cell* grid, GameDiff diff, int width, int height);
+
+/**
+ *
+ * @param cursorX
+ * @param cursorY
+ */
+bool getInput(int* cursorX, int* cursorY, int width, int height);
 
 /**
  *
