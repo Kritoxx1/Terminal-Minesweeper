@@ -22,11 +22,6 @@
 bool initialize();
 
 /**
- * @purpose draws the Map
- */
-void drawMap();
-
-/**
  * @purpose free memory
  */
 void destroy();

@@ -33,17 +33,26 @@ typedef struct startMenu{
 
 // KEYS
 #define KEY_SPACE ' '
+#define KEY_FF 'F' // (F key)
+#define KEY_LF 'f' // (f key)
 
 typedef struct Cell {
   bool isRevealed; // If the cell revealed or not
   bool isBomb; // If the cell is a bomb
+  bool isFlagged; // If the cell got a flag
   int num; // Number of bombs in its radius.
 }Cell;
 
 /**
  *
+ * @param grid
+ * @param width
+ * @param height
+ * @param cursorX
+ * @param cursorY
  */
-void drawGrid(int width, int height, int cursorX, int cursorY);
+void drawGrid(const Cell* grid, const int width, const int height,
+              const int cursorX, const int cursorY);
 
 /**
  *
@@ -65,7 +74,7 @@ void initGameGrid(Cell* grid, GameDiff diff, int width, int height);
  * @param cursorX
  * @param cursorY
  */
-bool getInput(int* cursorX, int* cursorY, int width, int height);
+bool getInput(const Cell* grid, int* cursorX, int* cursorY, const int width, const int height);
 
 /**
  *

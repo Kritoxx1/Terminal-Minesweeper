@@ -6,22 +6,39 @@
 #include "game.h"
 
 void
-drawGrid(int width, int height, int cursorX, int cursorY) {
+drawGrid(const Cell* grid, const int width, const int height,
+          const int cursorX, const int cursorY) {
   clear(); // clears the screen
 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
+      Cell c = grid[y * width + x]; // get current cell
+
       if (x == cursorX && y == cursorY) {
-        attron(A_REVERSE); // highlight
-        mvaddch(y, x * 2, '#');
-        attroff(A_REVERSE);
-        refresh();
-      } else {
-        mvaddch(y, x * 2, '#');
-        refresh();
+        attron(A_REVERSE); // highlight cursor
       }
+
+      if (c.isRevealed) {
+        if (c.isBomb) {
+          mvaddch(y, x * 2, 'B'); // Bomb
+        } else if (c.num > 0) {
+          mvaddch(y, x * 2, '0' + c.num); // number
+        } else {
+          mvaddch(y, x * 2, ' '); // Empty
+        }
+      } else if (c.isFlagged) {
+        mvaddch(y, x * 2, 'F'); // Place flag
+      } else {
+        mvaddch(y, x * 2, '#'); // hidden
+      }
+
+      if (x == cursorX && y == cursorY) {
+        attroff(A_REVERSE);
+      }
+
     }
   }
+  refresh();
 }
 
 Cell*
@@ -74,6 +91,9 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
     case CUSTOM:
       // soon.
       break;
+    default:
+      perror("Error");
+      break;
   }
 
   /* Placing mines */
@@ -98,7 +118,7 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
         for (int d = 0; d < 8; d++) {
           int nx = x + dx[d];
           int ny = y + dy[d];
-          if (nx >= 0 && nx < width && ny >= 0 && ny < height) { // Check if It's still in the grid
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) { // Check if it is still in the grid
             Cell* n = &grid[ny * width + nx];
             if (!n->isBomb) {
               n->num++;
@@ -112,8 +132,12 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
 }
 
 bool
-getInput(int* cursorX, int* cursorY, int width, int height) {
+getInput(const Cell* grid, int* cursorX, int* cursorY,
+          const int width, const int height) {
   int ch = getch();
+
+  Cell* c = &grid[*cursorY * width + *cursorX];
+
   switch (ch) {
     case KEY_UP:
       if (*cursorY > 0) (*cursorY)--;
@@ -128,10 +152,27 @@ getInput(int* cursorX, int* cursorY, int width, int height) {
       if (*cursorX < width - 1) (*cursorX)++;
       break;
     case KEY_SPACE: // reveal Cell
-
+      if (!c->isRevealed) {
+        c->isRevealed = true;
+        if (c->isBomb) {
+          return false; // game over
+        }
+      }
+      break;
+    case KEY_LF:
+    case KEY_FF: // place flag
+      if (c->isFlagged) {
+        c->isFlagged = false; // Remove flag if it is already there
+      } else {
+        c->isFlagged = true; // place flag
+        printf("Placed Flag");
+      }
       break;
     case 'q': // quit
       return false;
+    default:
+      // No default cuz would be annoying ;P
+      break;
   }
   return true;
 }
@@ -143,18 +184,18 @@ game(GameDiff diff) {
   Cell* grid = allocGameGrid(diff, &width, &height);
 
   int cursorX = 0, cursorY = 0;
-  getInput(&cursorX, &cursorY, width, height);
+  getInput(grid, &cursorX, &cursorY, width, height);
 
   /* Draw Grid */
-  drawGrid(width, height, cursorX, cursorY);
+  drawGrid(grid, width, height, cursorX, cursorY);
 
   /* Finally initializing the game grid */
   initGameGrid(grid, diff, width, height);
 
   bool running = true;
   while (running) {
-    drawGrid(width, height, cursorX, cursorY);
-    running = getInput(&cursorX, &cursorY, width, height);
+    drawGrid(grid, width, height, cursorX, cursorY);
+    running = getInput(grid, &cursorX, &cursorY, width, height);
   }
 
   free(grid);
