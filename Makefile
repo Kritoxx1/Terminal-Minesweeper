@@ -1,5 +1,5 @@
 CC = gcc
-SRC = startMenu.c game.c main.c
+SRC = startMenu.c game.c gameOverMenu.c main.c
 LINK = -lncurses
 TARGET = minesweeper
 FLAGS = -Wall

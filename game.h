@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #include "startMenu.h"
+#include "gameOverMenu.h"
 
 typedef struct startMenu{
   bool quit; // true if user pressed exit on the start menu
@@ -82,5 +83,7 @@ bool getInput(const Cell* grid, int* cursorX, int* cursorY, const int width, con
  */
 void game(GameDiff diff);
 
+/***/
+bool gameOver();
 
 #endif //GAME_H

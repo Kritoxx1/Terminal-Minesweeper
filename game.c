@@ -6,6 +6,32 @@
 #include "game.h"
 
 void
+floodReveal(Cell* grid, int x, int y, int width, int height) {
+  /* out of bound check */
+  if (x < 0 || x >= width || y < 0 || y >= height)
+    return;
+
+  Cell* c = &grid[y * width + x];
+
+  if (c->isRevealed || c->isFlagged)
+    return;
+
+  // reveal the cell
+  c->isRevealed = true;
+
+  // if not empty stop
+  if (c->num > 0)
+    return;
+
+  // else expand to all neighbors
+  int dx[8] = {-1,-1,-1,0,0,1,1,1};
+  int dy[8] = {-1,0,1,-1,1,-1,0,1};
+  for (int i = 0; i < 8; i++) {
+    floodReveal(grid, x + dx[i], y + dy[i], width, height);
+  }
+}
+
+void
 drawGrid(const Cell* grid, const int width, const int height,
           const int cursorX, const int cursorY) {
   clear(); // clears the screen
@@ -22,12 +48,52 @@ drawGrid(const Cell* grid, const int width, const int height,
         if (c.isBomb) {
           mvaddch(y, x * 2, 'B'); // Bomb
         } else if (c.num > 0) {
-          mvaddch(y, x * 2, '0' + c.num); // number
+          switch (c.num) {
+            case 1:
+              attron(COLOR_PAIR(3)); // Blue
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(3));
+              break;
+            case 2:
+              attron(COLOR_PAIR(5)); // Green
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(5));
+              break;
+            case 3:
+              attron(COLOR_PAIR(1)); // Red
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(1));
+              break;
+            case 4:
+              attron(COLOR_PAIR(4)); // Magenta
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(4));
+              break;
+            case 5:
+              attron(COLOR_PAIR(6)); // Yellow
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(6));
+              break;
+            case 6:
+              attron(COLOR_PAIR(7)); // Cyan
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(7));
+              break;
+            case 7:
+              attron(COLOR_PAIR(2)); // White ... Sadly no more colors
+              mvaddch(y, x * 2, '0' + c.num);
+              attroff(COLOR_PAIR(2));
+              break;
+          }
+
+
         } else {
           mvaddch(y, x * 2, ' '); // Empty
         }
       } else if (c.isFlagged) {
+        attron(COLOR_PAIR(1)); // turn on Red
         mvaddch(y, x * 2, 'F'); // Place flag
+        attroff(COLOR_PAIR(1));
       } else {
         mvaddch(y, x * 2, '#'); // hidden
       }
@@ -151,11 +217,14 @@ getInput(const Cell* grid, int* cursorX, int* cursorY,
     case KEY_RIGHT:
       if (*cursorX < width - 1) (*cursorX)++;
       break;
-    case KEY_SPACE: // reveal Cell
-      if (!c->isRevealed) {
-        c->isRevealed = true;
+    case KEY_SPACE: // reveal
+      if (!c->isRevealed && !c->isFlagged) {
         if (c->isBomb) {
-          return false; // game over
+          return false;
+        } else if (c->num == 0) {
+          floodReveal(grid, *cursorX, *cursorY, width, height);
+        } else {
+          c->isRevealed = true;
         }
       }
       break;
@@ -193,10 +262,20 @@ game(GameDiff diff) {
   initGameGrid(grid, diff, width, height);
 
   bool running = true;
-  while (running) {
-    drawGrid(grid, width, height, cursorX, cursorY);
-    running = getInput(grid, &cursorX, &cursorY, width, height);
-  }
+  bool again = true;
+
+  do {
+    while (running) {
+      drawGrid(grid, width, height, cursorX, cursorY);
+      running = getInput(grid, &cursorX, &cursorY, width, height);
+    }
+    again = gameOver();
+    if (again) {
+      running = true;
+    }
+  } while (again != false);
+
 
   free(grid);
 }
+

@@ -48,8 +48,13 @@ initialize() {
   initscr();
 
   start_color(); // needed for colors
-  init_pair(1, COLOR_RED, COLOR_BLACK);   // foreground red, background black
-  init_pair(2, COLOR_WHITE, COLOR_BLACK); // foreground white, background black
+  init_pair(1, COLOR_RED, COLOR_BLACK); // 3, F
+  init_pair(2, COLOR_WHITE, COLOR_BLACK); // 7
+  init_pair(3, COLOR_BLUE, COLOR_BLACK); // 1
+  init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // 4
+  init_pair(5, COLOR_GREEN, COLOR_BLACK); // 2
+  init_pair(6, COLOR_YELLOW, COLOR_BLACK); // 5
+  init_pair(7, COLOR_CYAN, COLOR_BLACK); // 6
 
   cbreak(); // disable line buffering
   noecho(); // no echoing of typed characters
@@ -59,7 +64,7 @@ initialize() {
   return true;
 }
 
-
-void destroy() {
+void
+destroy() {
   endwin();
 }
