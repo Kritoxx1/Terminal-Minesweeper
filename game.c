@@ -5,6 +5,8 @@
 
 #include "game.h"
 
+#include "winMenu.h"
+
 void
 floodReveal(Cell* grid, int x, int y, int width, int height) {
   /* out of bound check */
@@ -18,6 +20,7 @@ floodReveal(Cell* grid, int x, int y, int width, int height) {
 
   // reveal the cell
   c->isRevealed = true;
+  revealedCount--;
 
   // if not empty stop
   if (c->num > 0)
@@ -29,6 +32,57 @@ floodReveal(Cell* grid, int x, int y, int width, int height) {
   for (int i = 0; i < 8; i++) {
     floodReveal(grid, x + dx[i], y + dy[i], width, height);
   }
+}
+
+bool
+revealLeftOverCells(Cell* grid, int x, int y, int width, int height) {
+  if (x < 0 || x >= width || y < 0 || y >= height)
+    return true;
+
+  // Current Cell where the player Clicked
+  Cell* c = &grid[y * width + x];
+
+  int numOfFlagsNeeded = c->num;
+
+  int dx[8] = {-1,-1,-1,0,0,1,1,1};
+  int dy[8] = {-1,0,1,-1,1,-1,0,1};
+
+  int flags = 0;
+  for (int i = 0; i < 8; i++) {
+    int nx = x + dx[i];
+    int ny = y + dy[i];
+
+    if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+
+    Cell* neighbor = &grid[ny * width + nx];
+    if (!neighbor->isRevealed && neighbor->isFlagged) flags++;
+  }
+
+  if (flags >= numOfFlagsNeeded) {
+    for (int i = 0; i < 8; i++) {
+      int nx = x + dx[i];
+      int ny = y + dy[i];
+
+      if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+
+      Cell* neighbor = &grid[ny * width + nx];
+
+      if (neighbor->isRevealed || neighbor->isFlagged) continue;
+
+      if (neighbor->num == 0) {
+        floodReveal(grid, nx, ny, width, height);
+      } else {
+        if (neighbor->isBomb) {
+          return false;
+        }
+        neighbor->isRevealed = true;
+        revealedCount--;
+      }
+
+    }
+  }
+
+  return true;
 }
 
 void
@@ -91,9 +145,9 @@ drawGrid(const Cell* grid, const int width, const int height,
           mvaddch(y, x * 2, ' '); // Empty
         }
       } else if (c.isFlagged) {
-        attron(COLOR_PAIR(1)); // turn on Red
+        attron(COLOR_PAIR(8)); // turn on Red
         mvaddch(y, x * 2, 'F'); // Place flag
-        attroff(COLOR_PAIR(1));
+        attroff(COLOR_PAIR(8));
       } else {
         mvaddch(y, x * 2, '#'); // hidden
       }
@@ -130,6 +184,7 @@ allocGameGrid(GameDiff diff, int* width, int* height) {
       break;
   }
 
+  // allocate memory for the grid
   Cell *gameGrid = malloc((*width) * (*height) * sizeof(Cell));
   if (!gameGrid) {
     perror("malloc failed");
@@ -161,6 +216,9 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
       perror("Error");
       break;
   }
+
+  // How many free cells there are.
+  revealedCount = (width * height) - mineAmount;
 
   /* Placing mines */
   int placed = 0;
@@ -194,7 +252,6 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
       }
     }
   }
-
 }
 
 bool
@@ -225,8 +282,15 @@ getInput(const Cell* grid, int* cursorX, int* cursorY,
           floodReveal(grid, *cursorX, *cursorY, width, height);
         } else {
           c->isRevealed = true;
+          revealedCount--;
+        }
+      } else if (c->isRevealed && c->num != 0) {
+        if (!revealLeftOverCells(grid, *cursorX, *cursorY, width, height)) {
+          // Mine revealed -> Game Over
+          return false;
         }
       }
+
       break;
     case KEY_LF:
     case KEY_FF: // place flag
@@ -234,11 +298,18 @@ getInput(const Cell* grid, int* cursorX, int* cursorY,
         c->isFlagged = false; // Remove flag if it is already there
       } else {
         c->isFlagged = true; // place flag
-        printf("Placed Flag");
       }
       break;
+    case 'Q':
     case 'q': // quit
       return false;
+    case 'D':
+    case 'd': // DEBUG: print revealedCount
+      clear();
+      printw("REVEALEDCOUNT: %d", revealedCount);
+      refresh();
+      sleep(1);
+      break;
     default:
       // No default cuz would be annoying ;P
       break;
@@ -246,36 +317,39 @@ getInput(const Cell* grid, int* cursorX, int* cursorY,
   return true;
 }
 
-void
+bool
+winChecker() {
+  if (!revealedCount) {
+    return true;
+  }
+  return false;
+}
+
+bool
 game(GameDiff diff) {
   int width;
   int height;
   Cell* grid = allocGameGrid(diff, &width, &height);
 
   int cursorX = 0, cursorY = 0;
-  getInput(grid, &cursorX, &cursorY, width, height);
 
   /* Draw Grid */
   drawGrid(grid, width, height, cursorX, cursorY);
 
+  bool running = true;
+  running = getInput(grid, &cursorX, &cursorY, width, height);
+
   /* Finally initializing the game grid */
   initGameGrid(grid, diff, width, height);
-
-  bool running = true;
-  bool again = true;
-
-  do {
-    while (running) {
-      drawGrid(grid, width, height, cursorX, cursorY);
-      running = getInput(grid, &cursorX, &cursorY, width, height);
-    }
-    again = gameOver();
-    if (again) {
-      running = true;
-    }
-  } while (again != false);
-
+  
+  bool win = false;
+  while (running) {
+    drawGrid(grid, width, height, cursorX, cursorY);
+    running = getInput(grid, &cursorX, &cursorY, width, height);
+    win = winChecker();
+    if (win) running = false;
+  }
 
   free(grid);
+  return win; 
 }
-

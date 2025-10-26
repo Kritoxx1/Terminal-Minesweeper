@@ -45,6 +45,6 @@ GameDiff playMenu();
  *
  * @return ...
  */
-void menu(GameDiff* difficulty_var);
+void menu(GameDiff* difficulty_var, bool* gameEndVar);
 
 #endif //STARTMENU_H

@@ -12,7 +12,6 @@
 #include <stdbool.h>
 
 #include "startMenu.h"
-#include "gameOverMenu.h"
 
 typedef struct startMenu{
   bool quit; // true if user pressed exit on the start menu
@@ -36,6 +35,9 @@ typedef struct startMenu{
 #define KEY_SPACE ' '
 #define KEY_FF 'F' // (F key)
 #define KEY_LF 'f' // (f key)
+
+// Variables
+static int revealedCount;
 
 typedef struct Cell {
   bool isRevealed; // If the cell revealed or not
@@ -79,11 +81,38 @@ bool getInput(const Cell* grid, int* cursorX, int* cursorY, const int width, con
 
 /**
  *
+ * @param grid
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ */
+void floodReveal(Cell* grid, int x, int y, int width, int height);
+
+/**
+ *
+ * @param grid
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ * @return
+ */
+bool revealLeftOverCells(Cell* grid, int x, int y, int width, int height);
+
+/**
+ *
+ * @param grid
+ * @param diff
+ * @return
+ */
+bool winChecker();
+
+/**
+ *
  * @param diff
  */
-void game(GameDiff diff);
+bool game(GameDiff diff);
 
-/***/
-bool gameOver();
 
 #endif //GAME_H

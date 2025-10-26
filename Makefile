@@ -1,14 +1,14 @@
 CC = gcc
-SRC = startMenu.c game.c gameOverMenu.c main.c
+SRC = menu.c game.c main.c
 LINK = -lncurses
 TARGET = minesweeper
 FLAGS = -Wall
 
 all:
-	$(CC) $(SRC) -o $(TARGET) $(LINK) $(FLAGS)
+	$(CC) $(SRC) -o Build/$(TARGET) $(LINK) $(FLAGS)
 
 run:
-	./$(TARGET)
+	./Build/$(TARGET)
 
 clean:
-	rm -rf $(TARGET)
+	rm -rf Build/$(TARGET)
