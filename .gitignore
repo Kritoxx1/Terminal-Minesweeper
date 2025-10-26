@@ -1,3 +1,4 @@
+.idea/
 Build/
 cmake-build-debug/
 /*.txt
