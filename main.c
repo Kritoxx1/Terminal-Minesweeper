@@ -6,21 +6,23 @@
 #include <stdbool.h>
 #include <ncurses.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "startMenu.h"
 #include "gameOverMenu.h"
 #include "game.h"
+#include "winMenu.h"
 
 #define WIDTH 9
 #define HEIGHT 9
 
 /**
- * @purpose Initializing
+ * @brief Initializing
  */
 void initialize();
 
 /**
- * @purpose free memory
+ * @brief free memory
  */
 void destroy();
 
@@ -38,10 +40,14 @@ int main(void) {
   while (!gameShouldEnd) {
 
     bool playAgain = false; // true if Yes, false if No
-    if(!game(diff))
-      playAgain = gameOver();
-    else 
-      playAgain = winChecker();
+    if (!game(diff)) {
+      sleep(2);
+      playAgain = gameOverMenu();
+    }
+    else {
+      sleep(2);
+      playAgain = winMenu();
+    }
 
     if (!playAgain) {
       menu(&diff, &gameShouldEnd); // exit loop

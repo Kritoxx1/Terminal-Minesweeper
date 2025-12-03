@@ -5,32 +5,35 @@
 
 #include "game.h"
 
-#include "winMenu.h"
-
-void
+bool
 floodReveal(Cell* grid, int x, int y, int width, int height) {
   /* out of bound check */
   if (x < 0 || x >= width || y < 0 || y >= height)
-    return;
+    return false;
 
   Cell* c = &grid[y * width + x];
 
   if (c->isRevealed || c->isFlagged)
-    return;
+    return false;
 
   // reveal the cell
   c->isRevealed = true;
   revealedCount--;
 
+  if(c->isBomb)
+    return true;
+
   // if not empty stop
   if (c->num > 0)
-    return;
+    return false;
+
 
   // else expand to all neighbors
   int dx[8] = {-1,-1,-1,0,0,1,1,1};
   int dy[8] = {-1,0,1,-1,1,-1,0,1};
   for (int i = 0; i < 8; i++) {
-    floodReveal(grid, x + dx[i], y + dy[i], width, height);
+    if(floodReveal(grid, x + dx[i], y + dy[i], width, height))
+      break;
   }
 }
 
@@ -212,8 +215,8 @@ initGameGrid(Cell* grid, GameDiff diff, int width, int height) {
     case CUSTOM:
       // soon.
       break;
-    default:
-      perror("Error");
+  default:
+    perror("Error");
       break;
   }
 
@@ -349,7 +352,12 @@ game(GameDiff diff) {
     win = winChecker();
     if (win) running = false;
   }
+  
+  /* Draw grid one last time */
+  drawGrid(grid, width, height, cursorX, cursorY);
 
+  sleep(1);
+   
   free(grid);
   return win; 
 }

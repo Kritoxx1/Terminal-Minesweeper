@@ -118,7 +118,7 @@ menu(GameDiff* difficulty_var, bool* gameEndVar) {
 
 // not done yet.
 bool 
-gameOver() {
+gameOverMenu() {
   // sleep(3);
   clear(); // clear the screen
 

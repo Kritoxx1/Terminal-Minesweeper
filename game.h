@@ -47,6 +47,7 @@ typedef struct Cell {
 }Cell;
 
 /**
+ * @brief ... Draws the grid to the terminal
  *
  * @param grid
  * @param width
@@ -58,6 +59,7 @@ void drawGrid(const Cell* grid, const int width, const int height,
               const int cursorX, const int cursorY);
 
 /**
+ * @brief ... Allocate memory for the grid
  *
  * @param diff
  * @param width
@@ -67,12 +69,14 @@ void drawGrid(const Cell* grid, const int width, const int height,
 Cell* allocGameGrid(GameDiff diff, int* width, int* height);
 
 /**
+ * @brief ... Fills the Grid with information
  *
  * @param grid
  */
 void initGameGrid(Cell* grid, GameDiff diff, int width, int height);
 
 /**
+ * @brief ... Main input getter for the game controll
  *
  * @param cursorX
  * @param cursorY
@@ -80,6 +84,7 @@ void initGameGrid(Cell* grid, GameDiff diff, int width, int height);
 bool getInput(const Cell* grid, int* cursorX, int* cursorY, const int width, const int height);
 
 /**
+ * @brief ... Chain reaction of revealing empty celss
  *
  * @param grid
  * @param x
@@ -87,9 +92,10 @@ bool getInput(const Cell* grid, int* cursorX, int* cursorY, const int width, con
  * @param width
  * @param height
  */
-void floodReveal(Cell* grid, int x, int y, int width, int height);
+bool floodReveal(Cell* grid, int x, int y, int width, int height);
 
 /**
+ * @brief ... 
  *
  * @param grid
  * @param x
@@ -101,7 +107,8 @@ void floodReveal(Cell* grid, int x, int y, int width, int height);
 bool revealLeftOverCells(Cell* grid, int x, int y, int width, int height);
 
 /**
- *
+ * @brief ... Checks for win
+ * 
  * @param grid
  * @param diff
  * @return
@@ -109,7 +116,7 @@ bool revealLeftOverCells(Cell* grid, int x, int y, int width, int height);
 bool winChecker();
 
 /**
- *
+ * @brief ... Main game loop
  * @param diff
  */
 bool game(GameDiff diff);

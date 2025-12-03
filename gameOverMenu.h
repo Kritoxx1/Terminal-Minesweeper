@@ -15,6 +15,6 @@ typedef enum gameOverOptions {
   GAME_OVER_AMOUNT_OF_OPTIONS = 2
 }gameOverOptions;
 
-bool gameOver();
+bool gameOverMenu();
 
 #endif
