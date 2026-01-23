@@ -5,6 +5,7 @@ TARGET = minesweeper
 FLAGS = -Wall
 
 all:
+	mkdir -p Build
 	$(CC) $(SRC) -o Build/$(TARGET) $(LINK) $(FLAGS)
 
 run:
